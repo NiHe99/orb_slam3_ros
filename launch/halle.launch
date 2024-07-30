@@ -1,0 +1,117 @@
+<launch>
+    <param name="use_sim_time" value="true" />
+
+    <!-- Main node -->
+    <node name="orb_slam3" pkg="orb_slam3_ros" type="ros_rgbd" output="screen">
+        <!-- change the topics according to the dataset -->
+        <remap from="/camera/rgb/image_raw"                 to="/robot/front_rgbd_camera/front/rgb/image_rect_color"/>
+        <remap from="/camera/depth_registered/image_raw"    to="/robot/front_rgbd_camera/front/depth/depth_registered"/>
+
+
+        <!-- Parameters for original ORB-SLAM3 -->
+        <param name="voc_file"      type="string" value="$(find orb_slam3_ros)/orb_slam3/Vocabulary/ORBvoc.txt.bin"/>
+        <param name="settings_file" type="string" value="$(find orb_slam3_ros)/config/RGB-D/Roboter.yaml"/>
+
+        <!-- Parameters for ROS -->
+        <param name="world_frame_id"    type="string"   value="world" />
+        <param name="cam_frame_id"      type="string"   value="front_rgbd_camera_left_camera_optical_frame" />
+        <param name="enable_pangolin"   type="bool"     value="false" />
+    </node>
+    
+    <!-- Visualization -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d /home/nils/catkin/visualisierung2.rviz" output="screen" />
+    <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0 0 0 0 0 1.57 world new_world 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="cam_transform" args="0 0 0 0 0 1.57 front_rgbd_camera_left_camera_optical_frame new_front_rgbd_camera_left_camera_optical_frame 100"/>
+     <!--node pkg="learning_tf2" type="frame_tf2_broadcaster" name="broadcaster_frame" /-->
+     <!--node pkg="learning_tf2" type="frame_tf2_broadcaster_camera" name="broadcaster_frame_camera" /-->
+    <!-- Trajectory path -->
+    <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="trajectory_server_orb_slam3" output="screen" ns="orb_slam3_ros" >
+        <param name="/target_frame_name" value="/new_world" />
+        <param name="/source_frame_name" value="/front_rgbd_camera_left_camera_optical_frame" />
+        <param name="/trajectory_update_rate" value="10.0" />
+        <param name="/trajectory_publish_rate" value="10.0" />
+    </node>
+ 
+
+
+    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan_all_points">
+                <remap from="cloud_in" to="/points"/>
+                <remap from="scan" to="/scan_out/all_points"/>
+                <rosparam>
+                        target_frame: new_front_rgbd_camera_left_camera_optical_frame
+                        min_height: -1.0
+                        max_height: 1.0
+                        angle_min: 0.7
+                        angle_max: 2.45
+                        angle_increment: 0.025
+                        scan_time: 0.5
+                        range_min: 0.5
+                        range_max: 10
+                        use_inf: true
+                </rosparam>
+    </node>
+
+  <node pkg="nodelet" type="nodelet" name="standalone_nodelet" args="manager" />
+
+  <node pkg="nodelet" type="nodelet" name="point_cloud_xyzrgb" args="load depth_image_proc/point_cloud_xyz standalone_nodelet">
+    <remap from="camera_info" to="/robot/front_rgbd_camera/front/depth/camera_info" />  
+    <remap from="image_rect" to="/robot/front_rgbd_camera/front/depth/depth_registered" />
+
+</node>
+
+<node pkg="own_package" type="listener.py" name="listener" output="screen">
+
+</node>
+<arg name="fixed_frame1" default="new_world" />
+
+  <!-- Topics. -->
+<arg name="sensor_topic1" default="/new_scan" />
+<arg name="vis_topic1" default="/kf_ranges" />
+
+<node name="kf"
+pkg="own_package"
+type="all_kf_scan.py"
+output="screen">
+
+<param name="frames/fixed" value="$(arg fixed_frame1)" />
+<param name="topics/vis" value="$(arg vis_topic1)" />
+<param name="topics/sensor" value="$(arg sensor_topic1)" />
+
+
+</node>
+
+
+<arg name="fixed_frame2" default="new_world" />
+<arg name="sensor_frame2" default="new_front_rgbd_camera_left_camera_optical_frame" />
+
+  <!-- Topics. -->
+<arg name="sensor_topic2" default="/kf_ranges" />
+<arg name="vis_topic2" default="/vis/map" />
+
+<node name="maping"
+pkg="own_package"
+type="grid_map.py"
+output="screen">
+
+<param name="frames/fixed" value="$(arg fixed_frame2)" />
+<param name="frames/sensor" value="$(arg sensor_frame2)" />
+
+<param name="topics/vis" value="$(arg vis_topic2)" />
+<param name="topics/sensor" value="$(arg sensor_topic2)" />
+
+<param name="x/num" value="300" />
+<param name="x/min" value="-30.0" />
+<param name="x/max" value="30.0" />
+<param name="y/num" value="300" />
+<param name="y/min" value="-30.0" />
+<param name="y/max" value="30.0" />
+
+<param name="update/occupied" value="0.6" />
+<param name="update/occupied_threshold" value="0.97" />
+<param name="update/free" value="0.48" />
+<param name="update/free_threshold" value="0.03" />
+
+<param name="random_downsample" value="0.1" />
+</node>
+
+</launch>

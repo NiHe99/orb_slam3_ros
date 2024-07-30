@@ -1,0 +1,101 @@
+<launch>
+    <param name="use_sim_time" value="true" />
+
+    <!-- Main node -->
+    <node name="orb_slam3" pkg="orb_slam3_ros" type="ros_rgbd" output="screen">
+        <!-- change the topics according to the dataset -->
+        <remap from="/camera/rgb/image_raw"                 to="/camera/rgb/image_raw"/>
+        <remap from="/camera/depth_registered/image_raw"    to="/camera/depth/image_raw"/>
+
+
+        <!-- Parameters for original ORB-SLAM3 -->
+        <param name="voc_file"      type="string" value="$(find orb_slam3_ros)/orb_slam3/Vocabulary/ORBvoc.txt.bin"/>
+        <param name="settings_file" type="string" value="$(find orb_slam3_ros)/config/RGB-D/Roboter_Gaz.yaml"/>
+
+        <!-- Parameters for ROS -->
+        <param name="world_frame_id"    type="string"   value="world" />
+        <param name="cam_frame_id"      type="string"   value="camera_depth_frame" />
+        <param name="enable_pangolin"   type="bool"     value="true" />
+    </node>
+    
+    <!-- Visualization -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d /home/nils/catkin/visualisierung.rviz" output="screen" />
+    <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0 0 0 0 0 1.57 world new_world 100"/>
+     <!--node pkg="learning_tf2" type="frame_tf2_broadcaster" name="broadcaster_frame" /-->
+     <!--node pkg="learning_tf2" type="frame_tf2_broadcaster_camera" name="broadcaster_frame_camera" /-->
+    <!-- Trajectory path -->
+    <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="trajectory_server_orb_slam3" output="screen" ns="orb_slam3_ros" >
+        <param name="/target_frame_name" value="/new_world" />
+        <param name="/source_frame_name" value="/camera_depth_frame" />
+        <param name="/trajectory_update_rate" value="10.0" />
+        <param name="/trajectory_publish_rate" value="10.0" />
+    </node>
+ 
+    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+                <remap from="cloud_in" to="/orb_slam3/tracked_points"/>
+                <rosparam>
+                        target_frame: new_world
+                        min_height: -1.0
+                        max_height: 1.0
+                        angle_min: 0.6
+                        angle_max: 2.4
+                        angle_increment: 0.01
+                        scan_time: 0.1
+                        range_min: 0.5
+                        range_max: 35
+                        use_inf: false
+                </rosparam>
+    </node>
+
+    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan_all_points">
+                <remap from="cloud_in" to="/points"/>
+                <remap from="scan" to="/scan_out/all_points"/>
+                <rosparam>
+                        target_frame: new_front_rgbd_camera_left_camera_optical_frame
+                        min_height: -1.0
+                        max_height: 1.0
+                        angle_min: -3.14
+                        angle_max: 3.14
+                        angle_increment: 0.001
+                        scan_time: 0.1
+                        range_min: 1
+                        range_max: 10
+                        use_inf: true
+                </rosparam>
+    </node>
+
+    <node pkg="pointcloud_to_laserscan" type="laserscan_to_pointcloud_node" name="laserscan_to_pointcloud">
+                <remap from="scan_in" to="/scan_out/all_points"/>
+
+   </node>
+   
+
+	<node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+		<param name="resolution" value="0.25" />
+		<param name="sensor_model/hit" value="0.7" />
+                <param name="sensor_model/miss" value="0.4" />
+		<param name="sensor_model/min" value="0.12" />
+                <param name="sensor_model/max" value="0.97" />
+		<!--param name="pointcloud_min_z" value="-1.0"/-->
+                <param name="pointcloud_max_z" value="1.0"/>
+		<!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
+		<param name="frame_id" type="string" value="new_world" />
+		
+		<!-- maximum range to integrate (speedup!) -->
+		<param name="sensor_model/max_range" value="10.0" />
+
+		<param name="base_frame_id" value="/new_camera" />
+
+		<!-- data source to integrate (PointCloud2) -->
+		<remap from="cloud_in" to="/points" />
+	
+	</node>
+
+  <node pkg="nodelet" type="nodelet" name="standalone_nodelet" args="manager" />
+
+  <node pkg="nodelet" type="nodelet" name="point_cloud_xyzrgb" args="load depth_image_proc/point_cloud_xyz standalone_nodelet">
+    <remap from="camera_info" to="/camera/depth/camera_info" />  
+    <remap from="image_rect" to="/camera/depth/image_raw" />
+  </node>
+
+</launch>
