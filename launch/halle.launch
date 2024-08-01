@@ -59,13 +59,10 @@
 
 </node>
 
-<node pkg="own_package" type="listener.py" name="listener" output="screen">
-
-</node>
 <arg name="fixed_frame1" default="new_world" />
 
   <!-- Topics. -->
-<arg name="sensor_topic1" default="/new_scan" />
+<arg name="sensor_topic1" default="scan_out/all_points" />
 <arg name="vis_topic1" default="/kf_ranges" />
 
 <node name="kf"
@@ -99,16 +96,16 @@ output="screen">
 <param name="topics/vis" value="$(arg vis_topic2)" />
 <param name="topics/sensor" value="$(arg sensor_topic2)" />
 
-<param name="x/num" value="300" />
+<param name="x/num" value="600" />
 <param name="x/min" value="-30.0" />
 <param name="x/max" value="30.0" />
-<param name="y/num" value="300" />
+<param name="y/num" value="600" />
 <param name="y/min" value="-30.0" />
 <param name="y/max" value="30.0" />
 
 <param name="update/occupied" value="0.6" />
 <param name="update/occupied_threshold" value="0.97" />
-<param name="update/free" value="0.48" />
+<param name="update/free" value="0.45" />
 <param name="update/free_threshold" value="0.03" />
 
 <param name="random_downsample" value="0.1" />

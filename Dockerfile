@@ -1,5 +1,5 @@
-FROM amd64/ros:noetic-perception-focal
-
+FROM osrf/ros:noetic-desktop-full-focal
+#FROM amd64/ros:noetic-perception-focal
 ARG DEBIAN_FRONTEND=noninteractive
 ARG ROS_DISTRO=noetic
 
@@ -10,49 +10,53 @@ ARG ROS_DISTRO=noetic
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         software-properties-common \
+        net-tools \
+        iputils-ping \
         git \
         build-essential \
         cmake \
         libeigen3-dev \
-        ros-${ROS_DISTRO}-hector-trajectory-server \
+        ros-noetic-cv-bridge \
+        ros-noetic-pointcloud-to-laserscan\
+        ros-noetic-hector-trajectory-server \
+        libboost-python-dev \
+        python3 \
         python3-catkin-tools \
+        libepoxy-dev\
         libopencv-dev && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
 WORKDIR /root
 
+# RUN cd ~ && \
+#     mkdir Dev && cd Dev &&\
+#     git clone https://github.com/NiHe99/opencv.git &&\
+#     cd opencv &&\
+#     mkdir build &&\
+#     cd build &&\
+#     cmake -D CMAKE_BUILD_TYPE=Release -D WITH_CUDA=OFF -D CMAKE_INSTALL_PREFIX=/usr/local -DENABLE_PRECOMPILED_HEADERS=OFF .. &&\
+#     make && \
+#     sudo make install
+
+
 RUN git clone https://github.com/stevenlovegrove/Pangolin.git && \
     cd Pangolin && \
     mkdir build && cd build && \
     cmake .. && \
-    make -j && \
+    make && \
     make install
 
 RUN mkdir -p catkin_ws/src && \
     cd catkin_ws/src && \
-    git clone https://github.com/thien94/orb_slam3_ros.git && \
+    git clone https://github.com/NiHe99/own_package.git && \     
+    cd ..  
+
+RUN cd catkin_ws/src && \
+    git clone https://github.com/NiHe99/orb_slam3_ros.git && \
     cd .. && \
     catkin config \
       --extend /opt/ros/noetic && \
-    catkin build
+    catkin build -j 4
 
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
-
-#
-# install RealSenseSDK / RealSense ROS wrapper
-#
-
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
-RUN add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb_release -sc) main"
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        libssl-dev \
-        libudev-dev \
-        libusb-1.0-0-dev \
-        librealsense2-dev \
-        librealsense2-utils \
-        ros-${ROS_DISTRO}-realsense2-camera &&  \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
