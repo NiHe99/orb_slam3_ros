@@ -19,7 +19,7 @@
     </node>
     
     <!-- Visualization -->
-    <node name="rviz" pkg="rviz" type="rviz" args="-d /home/nils/catkin/visualisierung2.rviz" output="screen" />
+    <!--node name="rviz" pkg="rviz" type="rviz" args="-d /home/nils/catkin/visualisierung2.rviz" output="screen" /-->
     <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0 0 0 0 0 1.57 world new_world 100"/>
     <node pkg="tf" type="static_transform_publisher" name="cam_transform" args="0 0 0 0 0 1.57 front_rgbd_camera_left_camera_optical_frame new_front_rgbd_camera_left_camera_optical_frame 100"/>
      <!--node pkg="learning_tf2" type="frame_tf2_broadcaster" name="broadcaster_frame" /-->
@@ -62,7 +62,7 @@
 <arg name="fixed_frame1" default="new_world" />
 
   <!-- Topics. -->
-<arg name="sensor_topic1" default="scan_out/all_points" />
+<arg name="sensor_topic1" default="/scan_out/all_points" />
 <arg name="vis_topic1" default="/kf_ranges" />
 
 <node name="kf"
