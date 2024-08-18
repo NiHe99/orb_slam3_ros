@@ -1,27 +1,27 @@
 <launch>
-    <param name="use_sim_time" value="true" />
+    <param name="use_sim_time" value="false" />
 
     <!-- Main node -->
     <node name="orb_slam3" pkg="orb_slam3_ros" type="ros_rgbd" output="screen">
         <!-- change the topics according to the dataset -->
-        <remap from="/camera/rgb/image_raw"                 to="/robot/front_rgbd_camera/front/rgb/image_rect_color"/>
-        <remap from="/camera/depth_registered/image_raw"    to="/robot/front_rgbd_camera/front/depth/depth_registered"/>
+        <remap from="/camera/rgb/image_raw"                 to="/zed2/zed_node/rgb/image_rect_color"/>
+        <remap from="/camera/depth_registered/image_raw"    to="/zed2/zed_node/depth/depth_registered"/>
 
 
         <!-- Parameters for original ORB-SLAM3 -->
         <param name="voc_file"      type="string" value="$(find orb_slam3_ros)/orb_slam3/Vocabulary/ORBvoc.txt.bin"/>
-        <param name="settings_file" type="string" value="$(find orb_slam3_ros)/config/RGB-D/Roboter.yaml"/>
+        <param name="settings_file" type="string" value="$(find orb_slam3_ros)/config/RGB-D/Roboter_test.yaml"/>
 
         <!-- Parameters for ROS -->
         <param name="world_frame_id"    type="string"   value="world" />
-        <param name="cam_frame_id"      type="string"   value="front_rgbd_camera_left_camera_frame" />
+        <param name="cam_frame_id"      type="string"   value="zed2_right_camera_optical_frame" />
         <param name="enable_pangolin"   type="bool"     value="true" />
     </node>
     
     <!-- Visualization -->
     <node name="rviz" pkg="rviz" type="rviz" args="-d /home/nils/catkin/vis3.rviz" output="screen" />
     <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0 0 0 0 0 1.57 world new_world 100"/>
-    <node pkg="tf" type="static_transform_publisher" name="cam_transform" args="0 0 0 0 0 1.57 front_rgbd_camera_left_camera_optical_frame new_front_rgbd_camera_left_camera_optical_frame 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="cam_transform" args="0 0 0 0 0 1.57 zed2_right_camera_optical_frame new_front_rgbd_camera_left_camera_optical_frame 100"/>
     <node pkg="tf" type="static_transform_publisher" name="cam_transform2" args="0 0 0 0 0 -1.57 front_rgbd_camera_left_camera_frame front_rgbd_camera_left_camera_optical_frame 100"/>
 
      <!--node pkg="learning_tf2" type="frame_tf2_broadcaster" name="broadcaster_frame" /-->
@@ -29,7 +29,7 @@
     <!-- Trajectory path -->
     <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="trajectory_server_orb_slam3" output="screen" ns="orb_slam3_ros" >
         <param name="/target_frame_name" value="/new_world" />
-        <param name="/source_frame_name" value="/front_rgbd_camera_left_camera_optical_frame" />
+        <param name="/source_frame_name" value="/zed2_right_camera_optical_frame" />
         <param name="/trajectory_update_rate" value="10.0" />
         <param name="/trajectory_publish_rate" value="10.0" />
     </node>
@@ -56,8 +56,8 @@
   <node pkg="nodelet" type="nodelet" name="standalone_nodelet" args="manager" />
 
   <node pkg="nodelet" type="nodelet" name="point_cloud_xyzrgb" args="load depth_image_proc/point_cloud_xyz standalone_nodelet">
-    <remap from="camera_info" to="/robot/front_rgbd_camera/front/depth/camera_info" />  
-    <remap from="image_rect" to="/robot/front_rgbd_camera/front/depth/depth_registered" />
+    <remap from="camera_info" to="/zed2i/zed_node/depth/camera_info" />  
+    <remap from="image_rect" to="/zed2i/zed_node/depth/depth_registered" />
 
 </node>
 

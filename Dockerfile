@@ -11,6 +11,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         software-properties-common \
         net-tools \
+        vim \
         iputils-ping \
         git \
         build-essential \
