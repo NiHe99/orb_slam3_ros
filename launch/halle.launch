@@ -64,7 +64,7 @@
 <arg name="fixed_frame1" default="new_world" />
 
 
-<arg name="sensor_topic1" default="/cpp_map" />
+<arg name="sensor_topic1" default="/cpp_map2" />
 <arg name="vis_topic1" default="/feld" />
 
 <node name="point"
@@ -135,6 +135,13 @@ output="screen">
   <node name="Calc_Pot"
         pkg="own_package"
         type="occmap"
+        output="screen">
+
+  </node>
+
+    <node name="Calc_Pot2"
+        pkg="own_package"
+        type="occmap2"
         output="screen">
 
   </node>
