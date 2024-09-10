@@ -63,13 +63,13 @@
 
 <arg name="fixed_frame1" default="new_world" />
 
-  <!-- Topics. -->
-<arg name="sensor_topic1" default="/scan_out/all_points" />
-<arg name="vis_topic1" default="/kf_ranges" />
 
-<node name="kf"
+<arg name="sensor_topic1" default="/cpp_map2" />
+<arg name="vis_topic1" default="/feld" />
+
+<node name="point"
 pkg="own_package"
-type="all_kf_scan.py"
+type="Potential_map.py"
 output="screen">
 
 <param name="frames/fixed" value="$(arg fixed_frame1)" />
@@ -79,82 +79,34 @@ output="screen">
 
 </node>
 
+<arg name="sensor_topic6" default="/scan_out/all_points" />
+<arg name="vis_topic6" default="/kf_ranges" />
+
+<node name="kf"
+pkg="own_package"
+type="all_kf_scan.py"
+output="screen">
+
+<param name="frames/fixed" value="$(arg fixed_frame1)" />
+<param name="topics/vis" value="$(arg vis_topic6)" />
+<param name="topics/sensor" value="$(arg sensor_topic6)" />
+
+
+</node>
 
 <arg name="fixed_frame2" default="new_world" />
 <arg name="sensor_frame2" default="new_front_rgbd_camera_left_camera_optical_frame" />
 
-  <!-- Topics. -->
+
 <arg name="sensor_topic2" default="/kf_ranges" />
 <arg name="vis_topic2" default="/vis/map" />
-
-<node name="maping"
-pkg="own_package"
-type="grid_map.py"
-output="screen">
-
-<param name="frames/fixed" value="$(arg fixed_frame2)" />
-<param name="frames/sensor" value="$(arg sensor_frame2)" />
-
-<param name="topics/vis" value="$(arg vis_topic2)" />
-<param name="topics/sensor" value="$(arg sensor_topic2)" />
-
-<param name="x/num" value="300" />
-<param name="x/min" value="-30.0" />
-<param name="x/max" value="30.0" />
-<param name="y/num" value="300" />
-<param name="y/min" value="-30.0" />
-<param name="y/max" value="30.0" />
-
-<param name="update/occupied" value="0.7" />
-<param name="update/occupied_threshold" value="0.97" />
-<param name="update/free" value="0.45" />
-<param name="update/free_threshold" value="0.03" />
-
-<param name="random_downsample" value="0.1" />
-</node>
-
-
-
-<arg name="fixed_frame3" default="new_world" />
-<arg name="sensor_topic3" default="/vis/map_test" />
-<arg name="vis_topic3" default="/pot_map" />
-
-<node name="Pot"
-pkg="own_package"
-type="Potential_map.py"
-output="screen">
-
-<param name="frames/fixed" value="$(arg fixed_frame3)" />
-<param name="topics/vis" value="$(arg vis_topic3)" />
-<param name="topics/sensor" value="$(arg sensor_topic3)" />
-
-
-</node>
-
-<arg name="fixed_frame4" default="new_world" />
-<arg name="sensor_topic4" default="/vis/map" />
-<arg name="vis_topic4" default="/vis/map_dis" />
-
-<node name="Dis"
-pkg="own_package"
-type="grid_map_discrete.py"
-output="screen">
-
-<param name="frames/fixed" value="$(arg fixed_frame4)" />
-<param name="topics/vis" value="$(arg vis_topic4)" />
-<param name="topics/sensor" value="$(arg sensor_topic4)" />
-
-
-</node>
 
   <arg name="fixed_frame" default="new_world" />
  
 
-  <!-- Topics. -->
-  <arg name="sensor_topic" default="/vis/map_dis" />
+  <arg name="sensor_topic5" default="/cpp_occ_map" />
+  <arg name="sensor_topic52" default="/orb_slam3/camera_pose" />
   <arg name="vis_topic" default="/vis/map_test" />
-
-  <!-- Mapper node. -->
   <node name="Potf"
         pkg="own_package"
         type="Potentialfeld.py"
@@ -162,8 +114,36 @@ output="screen">
 
     <param name="frames/fixed" value="$(arg fixed_frame)" />
 
-
+    <param name="x/num" value="300" />
+    <param name="x/min" value="-30.0" />
+    <param name="x/max" value="30.0" />
+    <param name="y/num" value="300" />
+    <param name="y/min" value="-30.0" />
+    <param name="y/max" value="30.0" />
     <param name="topics/vis" value="$(arg vis_topic)" />
-    <param name="topics/sensor" value="$(arg sensor_topic)" />
+    <param name="topics/sensor" value="$(arg sensor_topic5)" />
+    <param name="topics/sensor2" value="$(arg sensor_topic52)" />
   </node>
+
+   <node name="Mapping"
+        pkg="own_package"
+        type="occmapping"
+        output="screen">
+
+  </node>
+
+  <node name="Calc_Pot"
+        pkg="own_package"
+        type="occmap"
+        output="screen">
+
+  </node>
+
+    <node name="Calc_Pot2"
+        pkg="own_package"
+        type="occmap2"
+        output="screen">
+
+  </node>
+
 </launch>

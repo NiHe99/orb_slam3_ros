@@ -132,13 +132,6 @@ output="screen">
 
   </node>
 
-  <node name="Calc_Pot"
-        pkg="own_package"
-        type="occmap"
-        output="screen">
-
-  </node>
-
     <node name="Calc_Pot2"
         pkg="own_package"
         type="occmap2"
