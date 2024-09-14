@@ -14,25 +14,16 @@
 
         <!-- Parameters for ROS -->
         <param name="world_frame_id"    type="string"   value="world" />
-        <param name="cam_frame_id"      type="string"   value="zed2_right_camera_optical_frame" />
+        <param name="cam_frame_id"      type="string"   value="zed2_left_camera_optical_frame" />
         <param name="enable_pangolin"   type="bool"     value="true" />
     </node>
     
     <!-- Visualization -->
     <node name="rviz" pkg="rviz" type="rviz" args="-d /home/nils/catkin/vis3.rviz" output="screen" />
     <node pkg="tf" type="static_transform_publisher" name="world_transform" args="0 0 0 0 0 1.57 world new_world 100"/>
-    <node pkg="tf" type="static_transform_publisher" name="cam_transform" args="0 0 0 0 0 1.57 zed2_right_camera_optical_frame new_front_rgbd_camera_left_camera_optical_frame 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="cam_transform" args="0 0 0 0 0 1.57 zed2_left_camera_optical_frame new_front_rgbd_camera_left_camera_optical_frame 100"/>
     <node pkg="tf" type="static_transform_publisher" name="cam_transform2" args="0 0 0 0 0 -1.57 front_rgbd_camera_left_camera_frame front_rgbd_camera_left_camera_optical_frame 100"/>
 
-     <!--node pkg="learning_tf2" type="frame_tf2_broadcaster" name="broadcaster_frame" /-->
-     <!--node pkg="learning_tf2" type="frame_tf2_broadcaster_camera" name="broadcaster_frame_camera" /-->
-    <!-- Trajectory path -->
-    <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="trajectory_server_orb_slam3" output="screen" ns="orb_slam3_ros" >
-        <param name="/target_frame_name" value="/new_world" />
-        <param name="/source_frame_name" value="/zed2_right_camera_optical_frame" />
-        <param name="/trajectory_update_rate" value="10.0" />
-        <param name="/trajectory_publish_rate" value="10.0" />
-    </node>
  
 
 
@@ -55,29 +46,13 @@
 
   <node pkg="nodelet" type="nodelet" name="standalone_nodelet" args="manager" />
 
-  <node pkg="nodelet" type="nodelet" name="point_cloud_xyzrgb" args="load depth_image_proc/point_cloud_xyz standalone_nodelet">
-    <remap from="camera_info" to="/zed2i/zed_node/depth/camera_info" />  
-    <remap from="image_rect" to="/zed2i/zed_node/depth/depth_registered" />
+  <node pkg="nodelet" type="nodelet" name="point_cloud_xyz" args="load depth_image_proc/point_cloud_xyz standalone_nodelet">
+    <remap from="camera_info" to="/zed2/zed_node/depth/camera_info" />  
+    <remap from="image_rect" to="/zed2/zed_node/depth/depth_registered" />
 
 </node>
 
 <arg name="fixed_frame1" default="new_world" />
-
-
-<arg name="sensor_topic1" default="/cpp_map2" />
-<arg name="vis_topic1" default="/feld" />
-
-<node name="point"
-pkg="own_package"
-type="Potential_map.py"
-output="screen">
-
-<param name="frames/fixed" value="$(arg fixed_frame1)" />
-<param name="topics/vis" value="$(arg vis_topic1)" />
-<param name="topics/sensor" value="$(arg sensor_topic1)" />
-
-
-</node>
 
 <arg name="sensor_topic6" default="/scan_out/all_points" />
 <arg name="vis_topic6" default="/kf_ranges" />
@@ -90,7 +65,6 @@ output="screen">
 <param name="frames/fixed" value="$(arg fixed_frame1)" />
 <param name="topics/vis" value="$(arg vis_topic6)" />
 <param name="topics/sensor" value="$(arg sensor_topic6)" />
-
 
 </node>
 
@@ -128,13 +102,6 @@ output="screen">
    <node name="Mapping"
         pkg="own_package"
         type="occmapping"
-        output="screen">
-
-  </node>
-
-  <node name="Calc_Pot"
-        pkg="own_package"
-        type="occmap"
         output="screen">
 
   </node>
